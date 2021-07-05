@@ -1,2 +1,2 @@
 # DockerTools
-Some useful docker config for dev
+Some useful docker based tools for dev

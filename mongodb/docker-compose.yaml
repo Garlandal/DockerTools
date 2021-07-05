@@ -1,0 +1,227 @@
+version: '3'
+services:
+    ########################################################## Cluster A ##########################################################
+    # A cluster router
+    routerA01:
+        image: mongo:4.4.3
+        container_name: A-router-01
+        command: mongos --port 27017 --configdb clusterA-config-server/configA01:27017,configA02:27017,configA03:27017 --bind_ip_all
+        ports: 
+            - 20001:27017
+        volumes: 
+            - ./scriptsA:/scripts
+    routerA02:
+        image: mongo:4.4.3
+        container_name: A-router-02
+        command: mongos --port 27017 --configdb clusterA-config-server/configA01:27017,configA02:27017,configA02:27017 --bind_ip_all
+        ports: 
+            - 20002:27017
+        volumes: 
+            - ./scriptsA:/scripts
+        links: 
+            - routerA01
+
+    # A cluster config server
+    configA01:
+        image: mongo:4.4.3
+        container_name: A-config-01
+        command: mongod --port 27017 --configsvr --replSet clusterA-config-server
+        volumes:
+            - ./scriptsA:/scripts
+        ports: 
+            - 21001:27017
+        links: 
+            - shardA01
+            - shardA11
+    configA02:
+        image: mongo:4.4.3
+        container_name: A-config-02
+        command: mongod --port 27017 --configsvr --replSet clusterA-config-server
+        volumes: 
+            - ./scriptsA:/scripts
+        ports: 
+            - 21002:27017
+        links: 
+            - configA01
+    configA03:
+        image: mongo:4.4.3
+        container_name: A-config-03
+        command: mongod --port 27017 --configsvr --replSet clusterA-config-server
+        volumes: 
+            - ./scriptsA:/scripts
+        ports: 
+            - 21003:27017
+        links: 
+            - configA02
+
+    # A cluster shards 0
+    shardA01:
+        image: mongo:4.4.3
+        container_name: A-shard-01
+        command: mongod --port 27017 --shardsvr --replSet rs-shard-A0
+        volumes:
+            - ./scriptsA:/scripts
+        ports: 
+            - 22001:27017
+        links: 
+            - shardA02
+            - shardA03
+    shardA02:
+        image: mongo:4.4.3
+        container_name: A-shard-02
+        command: mongod --port 27017 --shardsvr --replSet rs-shard-A0
+        volumes:
+            - ./scriptsA:/scripts
+        ports: 
+            - 22002:27017
+    shardA03:
+        image: mongo:4.4.3
+        container_name: A-shard-03
+        command: mongod --port 27017 --shardsvr --replSet rs-shard-A0
+        volumes:
+            - ./scriptsA:/scripts
+        ports: 
+            - 22003:27017
+
+    # A cluster shards 1
+    shardA11:
+        image: mongo:4.4.3
+        container_name: A-shard-11
+        command: mongod --port 27017 --shardsvr --replSet rs-shard-A1
+        volumes:
+            - ./scriptsA:/scripts
+        ports: 
+            - 23001:27017
+        links: 
+            - shardA12
+            - shardA13
+    shardA12:
+        image: mongo:4.4.3
+        container_name: A-shard-12
+        command: mongod --port 27017 --shardsvr --replSet rs-shard-A1
+        volumes:
+            - ./scriptsA:/scripts
+        ports: 
+            - 23002:27017
+    shardA13:
+        image: mongo:4.4.3
+        container_name: A-shard-13
+        command: mongod --port 27017 --shardsvr --replSet rs-shard-A1
+        volumes:
+            - ./scriptsA:/scripts
+        ports: 
+            - 23003:27017
+
+    
+    ########################################################## Cluster B ##########################################################
+    # B cluster router
+    routerB01:
+        image: mongo:4.4.3
+        container_name: B-router-01
+        command: mongos --port 27017 --configdb clusterB-config-server/configB01:27017,configB02:27017,configB03:27017 --bind_ip_all
+        ports: 
+            - 30001:27017
+        volumes: 
+            - ./scriptsB:/scripts
+    routerB02:
+        image: mongo:4.4.3
+        container_name: B-router-02
+        command: mongos --port 27017 --configdb clusterB-config-server/configB01:27017,configB02:27017,configB03:27017 --bind_ip_all
+        ports: 
+            - 30002:27017
+        volumes: 
+            - ./scriptsB:/scripts
+        links: 
+            - routerB01
+
+    # B cluster config server
+    configB01:
+        image: mongo:4.4.3
+        container_name: B-config-01
+        command: mongod --port 27017 --configsvr --replSet clusterB-config-server
+        volumes:
+            - ./scriptsB:/scripts
+        ports: 
+            - 31001:27017
+        links: 
+            - shardB01
+            - shardB11
+    configB02:
+        image: mongo:4.4.3
+        container_name: B-config-02
+        command: mongod --port 27017 --configsvr --replSet clusterB-config-server
+        volumes: 
+            - ./scriptsB:/scripts
+        ports: 
+            - 31002:27017
+        links: 
+            - configB01
+    configB03:
+        image: mongo:4.4.3
+        container_name: B-config-03
+        command: mongod --port 27017 --configsvr --replSet clusterB-config-server
+        volumes: 
+            - ./scriptsB:/scripts
+        ports: 
+            - 31003:27017
+        links: 
+            - configB02
+
+    # B cluster shards 0
+    shardB01:
+        image: mongo:4.4.3
+        container_name: B-shard-01
+        command: mongod --port 27017 --shardsvr --replSet rs-shard-B0
+        volumes:
+            - ./scriptsB:/scripts
+        ports: 
+            - 32001:27017
+        links: 
+            - shardB02
+            - shardB03
+    shardB02:
+        image: mongo:4.4.3
+        container_name: B-shard-02
+        command: mongod --port 27017 --shardsvr --replSet rs-shard-B0
+        volumes:
+            - ./scriptsB:/scripts
+        ports: 
+            - 32002:27017
+    shardB03:
+        image: mongo:4.4.3
+        container_name: B-shard-03
+        command: mongod --port 27017 --shardsvr --replSet rs-shard-B0
+        volumes:
+            - ./scriptsB:/scripts
+        ports: 
+            - 32003:27017
+
+    # B cluster shards 1
+    shardB11:
+        image: mongo:4.4.3
+        container_name: B-shard-11
+        command: mongod --port 27017 --shardsvr --replSet rs-shard-B1
+        volumes:
+            - ./scriptsB:/scripts
+        ports: 
+            - 33001:27017
+        links: 
+            - shardB12
+            - shardB13
+    shardB12:
+        image: mongo:4.4.3
+        container_name: B-shard-12
+        command: mongod --port 27017 --shardsvr --replSet rs-shard-B1
+        volumes:
+            - ./scriptsB:/scripts
+        ports: 
+            - 33002:27017
+
+    shardB13:
+        image: mongo:4.4.3
+        container_name: B-shard-13
+        command: mongod --port 27017 --shardsvr --replSet rs-shard-B1
+        volumes:
+            - ./scriptsB:/scripts
+        ports: 
+            - 33003:27017
